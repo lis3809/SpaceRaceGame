@@ -1,13 +1,21 @@
 # Класс астероида
-import pygame
+import pygame as pg
 import random
 
 
-class Asteroid(pygame.sprite.Sprite):
+def load_img(name):
+    img = pg.image.load(name)
+    #img = img.convert()
+    #colorkey = img.get_at((0, 0))
+    #img.set_colorkey(colorkey)
+    img = pg.transform.scale(img, (50, 111))
+    return img
+
+class Asteroid(pg.sprite.Sprite):
     def __init__(self, screen):
-        pygame.sprite.Sprite.__init__(self)
+        pg.sprite.Sprite.__init__(self)
         self.screen = screen
-        self.image = pygame.image.load("picture/asteroid.png")
+        self.image = load_img("picture/asteroid.png")
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, screen.get_width() - self.rect.width)
         self.rect.bottom = 0
