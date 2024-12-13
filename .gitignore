@@ -2,3 +2,5 @@
 /.idea/
 /__pycache__/
 /venv/
+/game_objects/__pycache__/asteroid.cpython-311.pyc
+/game_objects/__pycache__/space_ship.cpython-311.pyc
