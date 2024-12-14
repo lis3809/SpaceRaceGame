@@ -27,9 +27,6 @@ class SpaceGame():
         self.__FPS = config.FPS
         self.__clock = pg.time.Clock()
 
-        # Текущее значение очков игрока
-        self.__current_player_score = 0
-
         # Создаем объект класса DBManager, отвечающий за работу с базой данных
         self.__db_manger = DataBase()
         self.table_name = 'scores'
@@ -50,6 +47,10 @@ class SpaceGame():
         self.__init_game()
 
     def __init_game(self):
+
+        # Текущее значение очков игрока
+        self.__current_player_score = 0
+
         # Создаем объект основного окна
         self.screen = pg.display.set_mode(game_config.WINDOW_SIZE)
         pg.display.set_caption("Космическая гонка")
@@ -59,6 +60,7 @@ class SpaceGame():
 
         # Отдельный список астероидов
         self.asteroids = pg.sprite.Group()
+
         # В начале игры три астероида
         self.count_asteroid = 3
 
@@ -73,28 +75,7 @@ class SpaceGame():
             self.all_sprites.add(asteroid)
             self.asteroids.add(asteroid)
 
-    def __draw_score(self):
-        # Надпись с именем игрока
-        # Шрифт и размер текста
-        font = pg.font.Font(None, 28)
-        text_name = font.render(f"Игрок: {self.__player_name}", True, 'white')
-        text_name_rect = text_name.get_rect(topleft=(10, 30))
-        self.screen.blit(text_name, text_name_rect)
 
-        # Надпись с текущими очками игрока
-        text_score = font.render(f"Очки: {self.__current_player_score}", True, 'white')
-        text_score_rect = text_score.get_rect(topleft=(10, 50))
-        self.screen.blit(text_score, text_score_rect)
-
-    def check_colision(self):
-        # Проверяем столкновение игрока с астероидом
-        list_colid = pg.sprite.spritecollide(self.spaceship, self.asteroids, False)
-        if len(list_colid) > 0:
-            print('Столкновение')
-
-        for asteroid in self.asteroids:
-            if asteroid.rect.y >= self.screen.get_height():
-                self.__current_player_score += 1
 
 
     def __draw_scene(self):
@@ -107,7 +88,8 @@ class SpaceGame():
         # Отрисовываем очки
         self.__draw_score()
 
-        self.check_colision()
+        # Проверяем столкновения
+        self.check_collision()
 
         # Обновляем экран
         pg.display.update()
