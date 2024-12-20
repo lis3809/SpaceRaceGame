@@ -28,7 +28,7 @@ class DataBase:
         self.connection.commit()
 
     def update_player_data(self, table_name, name, score):
-        query_update = f'''UPDATE {table_name} SET score {score} WHERE name={name}'''
+        query_update = f'''UPDATE {table_name} SET score_points={score} WHERE name=\'{name}\' '''
         self.cursor.execute(query_update)
         # Сохраняем изменения
         self.connection.commit()

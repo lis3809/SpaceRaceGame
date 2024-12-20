@@ -79,6 +79,7 @@ class SpaceGame():
         # Проверяем столкновение игрока с астероидом
         list_colid = pg.sprite.spritecollide(self.spaceship, self.asteroids, False)
         if len(list_colid) > 0:
+            self.__db_manger.update_player_data(self.table_name, self.__player_name, self.__current_player_score)
             if self.__game_dialog.show_dialog_game_over():
                 self.__init_game()
             else:
