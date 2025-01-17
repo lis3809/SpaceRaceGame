@@ -37,11 +37,20 @@ class SpaceGame():
 
         # Запрашиваем имя игрока
         self.__player_name = self.__game_dialog.show_dialog_login()
-        print(self.__player_name)
+
+        # Запрашиваем результат лучшего игрока
+        self.__first_player_score = self.__db_manger.get_best_player_score(self.table_name)
+        if self.__first_player_score is None or self.__first_player_score == 0:
+            self.__first_player_score = 10
+
 
         # Сохраняем игрока в базу данных
-        # TODO
-        self.__db_manger.insert(self.table_name, self.__player_name, 0)
+        if self.__db_manger.save_new_player(self.table_name, self.__player_name):
+            print(f"Подключился новый игрок с логином: {self.__player_name}")
+            self.__best_result_current_player = 0  # Лучший результат текущего игрока
+        else:
+            # Если игрок уже был зарегистрирован, получаем его лучший результат
+            self.__best_result_current_player = self.__db_manger.get_user_score(self.table_name, self.__player_name)
 
         # Вызываем метод инициализациии остальных параметров
         self.__init_game()
@@ -75,15 +84,11 @@ class SpaceGame():
             self.all_sprites.add(asteroid)
             self.asteroids.add(asteroid)
 
-    def check_collision(self):
+    def __check_collision(self):
         # Проверяем столкновение игрока с астероидом
         list_colid = pg.sprite.spritecollide(self.spaceship, self.asteroids, False)
         if len(list_colid) > 0:
-            self.__db_manger.update_player_data(self.table_name, self.__player_name, self.__current_player_score)
-            if self.__game_dialog.show_dialog_game_over():
-                self.__init_game()
-            else:
-                exit()
+            return True
 
         # Если астероид вылетел за край экрана
         for asteroid in self.asteroids:
@@ -102,6 +107,8 @@ class SpaceGame():
             newAsteroid = Asteroid(self.screen)
             self.all_sprites.add(newAsteroid)
             self.asteroids.add(newAsteroid)
+
+        return False
 
     def __draw_score(self):
         # Надпись с именем игрока
@@ -126,13 +133,22 @@ class SpaceGame():
         # Отрисовываем очки
         self.__draw_score()
 
-        # Проверяем столкновения
-        self.check_collision()
-
         # Обновляем экран
         pg.display.update()
         pg.display.flip()
         self.__clock.tick(self.__FPS)
+
+    def __refresh_and_save_score(self):
+        # Храним только лучший результат игрока
+        if self.__current_player_score > self.__best_result_current_player:
+            self.__best_result_current_player = self.__current_player_score
+            self.__db_manger.update_player_data(self.table_name, self.__player_name, self.__best_result_current_player)
+        self.__current_player_score = 0
+
+    def __restart_game(self):
+        # Скорость движения
+        # self.__speed = 3
+        self.__init_game()
 
     def run_game(self, game_is_run):
         # Основной цикл игры
@@ -144,3 +160,23 @@ class SpaceGame():
 
             # Отрисовываем всё
             self.__draw_scene()
+
+            # Если обнаружено столкновение - выходим из гонки
+            if self.__check_collision():
+                self.__refresh_and_save_score()  # Сбрасываем текущее значение набранных очков
+                top_5_users = self.__db_manger.get_top_5_users(self.table_name)
+                if self.__game_dialog.show_dialog_game_over(top_5_users):
+                    self.__restart_game()
+                else:
+                    exit()
+
+            elif self.__current_player_score > self.__first_player_score:
+                self.__best_result_current_player = self.__current_player_score
+                self.__db_manger.update_player_data(self.table_name, self.__player_name, self.__best_result_current_player)
+                top_5_users = self.__db_manger.get_top_5_users(self.table_name)
+                if self.__game_dialog.show_dialog_win_game(top_5_users):
+                    # Чтобы продолжить игру, немного увеличим лучший результат
+                    self.__first_player_score += 1000
+                else:
+                    self.__refresh_and_save_score()  # Сбрасываем текущее значение набранных очков
+                    exit()

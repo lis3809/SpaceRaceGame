@@ -65,7 +65,7 @@ class GameDialog:
 
             pygame.display.flip()
 
-    def show_dialog_game_over(self):
+    def show_dialog_game_over(self, top_5_users):
         pygame.display.set_caption("GAME OVER")
         text = self.__font.render("Вы проиграли!", True, 'red')
         text_rect = text.get_rect(center=(config.WINDOW_SIZE[0] * 0.5, config.WINDOW_SIZE[1] * 0.3))
@@ -96,9 +96,19 @@ class GameDialog:
             self.__screen.blit(restart_text, (text_rect.left + 10, text_rect.y + 60))
             self.__screen.blit(exit_text, (text_rect.left + 10, button_restart.y + 60))
 
+            self.__show_top_5_users(top_5_users, text_rect.left, button_exit.y + 60)
+
             pygame.display.flip()
 
-    def show_dialog_win_game(self):
+    def __show_top_5_users(self, top_5_users, x, y):
+        i = 1
+        for user in top_5_users:
+            text_top_5_users = self.__font_players.render(f"{i}.  {user[0]}:  {user[1]}", True, 'white')
+            self.__screen.blit(text_top_5_users, (x, y))
+            y += 28
+            i += 1
+
+    def show_dialog_win_game(self, top_5_users):
         pygame.display.set_caption("WINNER")
         text = self.__font.render("Вы выиграли!", True, 'green')
         text_rect = text.get_rect(center=(config.WINDOW_SIZE[0] * 0.5, config.WINDOW_SIZE[1] * 0.3))
@@ -128,5 +138,7 @@ class GameDialog:
 
             self.__screen.blit(restart_text, (text_rect.left + 10, text_rect.y + 60))
             self.__screen.blit(exit_text, (text_rect.left + 10, button_restart.y + 60))
+
+            self.__show_top_5_users(top_5_users, text_rect.left, button_exit.y + 60)
 
             pygame.display.flip()
